@@ -1,0 +1,230 @@
+# =============================================================================
+# Ignore anything that is secret, generated, or machine-specific.
+#
+# Lockfiles are intentionally NOT ignored and should be committed:
+#   uv.lock, poetry.lock, requirements*.txt, Chart.lock,
+#   .terraform.lock.hcl, package-lock.json, pnpm-lock.yaml, yarn.lock
+#
+# Patterns prefixed with "/" only match at the repo root, so a nested
+# package such as app/services/logs/ is never swallowed by accident.
+# =============================================================================
+
+
+# ----------------------------------------------------------------------------
+# Secrets and credentials
+# ----------------------------------------------------------------------------
+.env
+.env.*
+*.env
+!.env.example
+!.env.*.example
+.envrc
+.direnv/
+.secrets/
+
+# Private keys and keystores
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ecdsa*
+id_ed25519*
+
+# Cloud and package-index credentials
+credentials.json
+*service-account*.json
+.pypirc
+.netrc
+
+# Decrypted SOPS files (commit only the encrypted versions)
+*.dec.yaml
+*.dec.yml
+*.dec.json
+
+
+# ----------------------------------------------------------------------------
+# Kubernetes, Helm, containers, and infrastructure
+# ----------------------------------------------------------------------------
+# Kubeconfigs grant cluster access and must never be committed.
+# Deliberately not "kubeconfig*", which would also ignore kubeconfig.py.
+kubeconfig
+kubeconfig.yaml
+kubeconfig.yml
+kubeconfig-*
+*.kubeconfig
+.kube/
+
+# Packaged Helm charts and vendored chart dependencies
+*.tgz
+
+# Local dev-loop tooling
+.tiltbuild/
+tilt_modules/
+
+# Per-developer Compose overrides
+docker-compose.override.yml
+docker-compose.override.yaml
+compose.override.yml
+compose.override.yaml
+
+# Terraform state, plans, and variable files (often contain secrets)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+
+# ----------------------------------------------------------------------------
+# Python
+# ----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+/env/
+/ENV/
+__pypackages__/
+.pdm-python
+.pdm-build/
+
+# Packaging and build output
+build/
+dist/
+wheels/
+sdist/
+eggs/
+.eggs/
+*.egg
+*.egg-info/
+share/python-wheels/
+pip-wheel-metadata/
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Flask
+instance/
+.webassets-cache
+flask_session/
+
+# Jupyter
+.ipynb_checkpoints/
+
+
+# ----------------------------------------------------------------------------
+# Testing, linting, type checking, and profiling
+# ----------------------------------------------------------------------------
+.pytest_cache/
+.tox/
+.nox/
+.hypothesis/
+.cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+*.py,cover
+nosetests.xml
+junit*.xml
+test-results/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+.benchmarks/
+*.prof
+*.lprof
+
+
+# ----------------------------------------------------------------------------
+# Runtime state: logs, local databases, workers, scratch files
+# ----------------------------------------------------------------------------
+*.log
+/logs/
+*.pid
+*.sock
+
+*.sqlite
+*.sqlite3
+*.db
+dump.rdb
+celerybeat-schedule
+celerybeat-schedule.*
+
+/tmp/
+/temp/
+*.tmp
+*.bak
+*.orig
+*.rej
+
+
+# ----------------------------------------------------------------------------
+# Node / frontend tooling
+# ----------------------------------------------------------------------------
+node_modules/
+.pnpm-store/
+.eslintcache
+.next/
+.nuxt/
+.turbo/
+.parcel-cache/
+*.tsbuildinfo
+
+
+# ----------------------------------------------------------------------------
+# Editors and AI assistants
+# ----------------------------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+.history/
+
+.idea/
+*.iml
+*.sublime-workspace
+
+*.swp
+*.swo
+*~
+.#*
+\#*\#
+
+.claude/settings.local.json
+CLAUDE.local.md
+
+
+# ----------------------------------------------------------------------------
+# Operating system metadata
+# ----------------------------------------------------------------------------
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Created when files are copied from Windows into WSL
+*:Zone.Identifier
