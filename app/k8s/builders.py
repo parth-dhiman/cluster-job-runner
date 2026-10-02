@@ -4,6 +4,9 @@ from typing import (
     Dict,
 )
 
+# Third-party imports.
+from kubernetes.client.models.v1_job import V1Job
+
 # Local imports.
 from app.config import (
     BACKOFF_LIMIT,
@@ -13,7 +16,7 @@ from app.config import (
 )
 from app.schema.job_spec import JobSpec
 
-def build_job(spec: JobSpec) -> Dict[str, Any]:
+def build_job(spec: JobSpec) -> V1Job:
 
     # Container: required fields first, optional ones only if provided.
     container: Dict[str, Any] = {
@@ -31,7 +34,7 @@ def build_job(spec: JobSpec) -> Dict[str, Any]:
         # exclude_none drops unset values (e.g. memory) so they are not sent as null.
         container["resources"] = spec.resources.model_dump(exclude_none = True)
 
-    return {
+    job_dict: Dict[str, Any] = {
         "apiVersion": "batch/v1",
         "kind": "Job",
         "metadata": {
@@ -52,3 +55,5 @@ def build_job(spec: JobSpec) -> Dict[str, Any]:
             },
         },
     }
+
+    return V1Job.from_dict(job_dict)
