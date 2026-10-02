@@ -1,0 +1,23 @@
+# Standard imports.
+from functools import cache
+
+# Third-party imports.
+from kubernetes import (
+    client,
+    config,
+)
+
+@cache
+def _init_client() -> client.ApiClient:
+    config.load_kube_config() # We're managing a cluster, we're not inside it.
+    return client.ApiClient()
+
+def init_batch_api():
+    return client.BatchV1Api(
+        api_client = _init_client(),
+    )
+
+def init_core_api():
+    return client.CoreV1Api(
+        api_client = _init_client(),
+    )
