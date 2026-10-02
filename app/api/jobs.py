@@ -6,11 +6,11 @@ from typing import (
 )
 
 # Third-party imports.
-from requests import Response
 from flask import (
     Flask,
     request,
     jsonify,
+    Response,
 )
 
 # Local imports.
@@ -37,4 +37,4 @@ def create_job() -> Tuple[Response, int]:
     response: Dict[str, Any] = jobs_service.create_job(job_spec)
 
     # Return response info and status.
-    return (jsonify(response), 200)
+    return (jsonify(response), 201)

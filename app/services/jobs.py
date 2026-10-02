@@ -6,11 +6,10 @@ from typing import (
 
 # Third-party imports.
 from kubernetes import client
-from kubernetes.client.models.v1_job import V1Job
 from kubernetes.client.rest import ApiException
 
 # Local imports.
-from app.k8s.builders import (
+from app.k8s.client import (
      init_core_api,
      init_batch_api,
 )
@@ -40,7 +39,7 @@ def _create_namespace(namespace: str) -> None:
         )
     )
 
-def create_job(spec: JobSpec) -> Dict[str, str]:
+def create_job(spec: JobSpec) -> Dict[str, Any]:
 
     # Access the namespace, ensure it exists.
     namespace: str = spec.namespace
@@ -48,11 +47,14 @@ def create_job(spec: JobSpec) -> Dict[str, str]:
         _create_namespace(namespace)
 
     # Build the job as a Dict object.
-    job: V1Job= build_job(spec)
+    job_dict: Dict[str, Any] = build_job(spec)
 
     # Create the job.
     batch_api = init_batch_api()
-    response = batch_api.create_namespaced_job(namespace="default", body=job)
+    response = batch_api.create_namespaced_job(
+        namespace = namespace,
+        body = job_dict,
+    )
 
     # Return job details in dict.
     return {
