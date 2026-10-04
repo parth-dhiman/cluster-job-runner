@@ -4,9 +4,6 @@ from typing import (
     Dict,
 )
 
-# Third-party imports.
-from kubernetes.client.models.v1_job import V1Job
-
 # Local imports.
 from app.config import (
     BACKOFF_LIMIT,
@@ -16,7 +13,7 @@ from app.config import (
 )
 from app.schema.job_spec import JobSpec
 
-def build_job(spec: JobSpec) -> V1Job:
+def build_job(spec: JobSpec) -> Dict[str, Any]:
 
     # Container: required fields first, optional ones only if provided.
     container: Dict[str, Any] = {
@@ -56,4 +53,4 @@ def build_job(spec: JobSpec) -> V1Job:
         },
     }
 
-    return V1Job.from_dict(job_dict)
+    return job_dict

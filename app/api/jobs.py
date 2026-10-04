@@ -16,10 +16,13 @@ from flask import (
 # Local imports.
 from app.schema.job_spec import JobSpec
 from app.services import jobs as jobs_service
+from app.api.errors import register_error_handlers
 
 # ===== Script-Level initilizations =====
 
 app = Flask(__name__)
+register_error_handlers(app)
+
 
 # ========== Endpoints ==========
 
