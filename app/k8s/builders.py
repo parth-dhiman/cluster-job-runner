@@ -11,7 +11,7 @@ from app.config import (
     MANAGED_BY_VALUE,
     SPEC_ANNOTATION,
 )
-from app.schema.job_spec import JobSpec
+from app.schema.jobs import JobSpec
 
 def build_job(spec: JobSpec) -> Dict[str, Any]:
 

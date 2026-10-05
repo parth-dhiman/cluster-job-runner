@@ -18,9 +18,10 @@ from pydantic import ValidationError
 from kubernetes.client.exceptions import ApiException
 from urllib3.exceptions import HTTPError
 from werkzeug.exceptions import HTTPException
+from app.exceptions import NotFoundError
 
 logger = logging.getLogger(__name__)
-
+    
 # ---------- Helpers -----------
 
 def _error(
@@ -65,9 +66,6 @@ def _handle_validation_e(e: ValidationError) -> Tuple[Response, int]:
 
 def _handle_k8s_api_e(e: ApiException) -> Tuple[Response, int]:
 
-    # What's the error status?
-    status: int = e.status
-
     # Determine an error code based on status.
     # Translate Kubernetes' status into ours. Anything unlisted (401, 403, 429, 5xx) is our side's fault.
     _MAP_STATUS: Dict[int, Tuple[int, str]] = {
@@ -106,6 +104,14 @@ def _handle_k8s_unreachable_e(e: HTTPError) -> Tuple[Response, int]:
         message = "Could not reach Kubernetes API.",
     )
 
+def _handle_not_found_e(e: NotFoundError) -> Tuple[Response, int]:
+    logger.warning("Not found error, %s", str(e))
+    return _error(
+        status  = 404,
+        code    = "NOT_FOUND",
+        message = str(e),
+    )
+
 def _handle_unexpected_e(e: Exception) -> Tuple[Response, int]:
     logger.exception("Unhandled Error: %s", str(e))
     return _error(
@@ -126,7 +132,8 @@ def _handle_flask_e(e: HTTPException) -> Tuple[Response, int]:
 
 def register_error_handlers(app: Flask) -> None:
     app.register_error_handler(ValidationError, _handle_validation_e)
-    app.register_error_handler(ApiException, _handle_k8s_api_e)
-    app.register_error_handler(HTTPError, _handle_k8s_unreachable_e)
-    app.register_error_handler(HTTPException, _handle_flask_e)
-    app.register_error_handler(Exception, _handle_unexpected_e)
+    app.register_error_handler(ApiException,    _handle_k8s_api_e)
+    app.register_error_handler(HTTPError,       _handle_k8s_unreachable_e)
+    app.register_error_handler(NotFoundError,   _handle_not_found_e)
+    app.register_error_handler(Exception,       _handle_unexpected_e)
+    app.register_error_handler(HTTPException,   _handle_flask_e)

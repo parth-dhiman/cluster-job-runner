@@ -37,9 +37,21 @@ _IMAGE_RE = re.compile(
     rf"(?:@{_IMAGE_DIGEST})?"                                   # optional "@digest"
 )
 
+# ---------- Helper Functions -------------------
 
+def _check_dns_label(v: str) -> str:
+    if not _NAMECHECK_RE.fullmatch(v):
+        raise ValueError(
+            "Must be lowercase letters, digits, or '-', "
+            "start and end with a letter or digit, max 63 characters."
+        )
+    return v
+
+# ---------- Classes we'll inherit from. ---------
 class Strict(BaseModel):
     model_config = ConfigDict(extra="forbid") 
+
+# ---------- Our Schema Classes -------------------
 
 class ResourceObject(Strict):
     cpu:    str | None = None
@@ -110,12 +122,7 @@ class JobSpec(Strict):
     @field_validator("name", "namespace")
     @classmethod
     def name_check(cls, v: str) -> str:  
-        if not _NAMECHECK_RE.fullmatch(v):
-            raise ValueError(
-                "Must be lowercase letters, digits, or '-', "
-                "start and end with a letter or digit, max 63 characters."
-            )
-        return v
+        return _check_dns_label(v)
 
     @field_validator("image")
     @classmethod
@@ -126,3 +133,24 @@ class JobSpec(Strict):
                 "like 'busybox', 'busybox:1.36', or 'ghcr.io/org/app:v1'."
             )
         return v
+
+class JobListQuery(Strict):
+    namespace: str | None = None
+    @field_validator("namespace")
+    @classmethod
+    def check(cls, v: str) -> str:  
+        if (v is None):
+            return None
+        return _check_dns_label(v)
+
+class JobRef(Strict):
+    
+    name: str
+    namespace: str = "default"
+    
+    @field_validator("name", "namespace")
+    @classmethod
+    def name_check(cls, v: str) -> str:  
+        return _check_dns_label(v)
+
+
