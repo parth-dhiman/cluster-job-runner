@@ -27,6 +27,7 @@ from app.config import (
     SPEC_ANNOTATION,
 )
 from app.schema.jobs import JobSpec
+from app.services.status import compute_status
 
 def _iso(dt: datetime) -> Optional[str]:
     if dt:
@@ -150,6 +151,7 @@ def _get_job_info(job) -> Dict[str, Any]:
         "start_time":      start_time,
         "completion_time": completion_time,
         "pods":            per_pod_data,
+        "status":          compute_status(job, pods.items),
     }
 
 def create_job(spec: JobSpec) -> Dict[str, Any]:
@@ -174,6 +176,7 @@ def create_job(spec: JobSpec) -> Dict[str, Any]:
         "name":      response.metadata.name,
         "namespace": response.metadata.namespace,
         "uid":       response.metadata.uid,
+        "status":    compute_status(response, []), # No pods yet, just created job.
     }
 
 def list_jobs(namespace: str) -> List[Dict[str, Any]]:
