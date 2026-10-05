@@ -11,17 +11,6 @@ import pytest
 from pydantic import ValidationError
 from app.schema.jobs import JobSpec
 
-"""
-General Rules:
-- Name and image are REQUIRED.
-- Name must be a valid value.
-- Image must be a valid string.
-- Namespace, Commands, args, env, and resources are optional is optional.
-- Completions MUST be a positive interger.
-- Parallelism MUST be a positive integer.
-- Resource values must be valid.
-"""
-
 _BASE_INPUT: Dict[str, Any] = {
     "name":  "hello",
     "image": "busybox",
