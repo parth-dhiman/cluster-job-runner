@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Cluster Job Runner</title>
+  <link rel="stylesheet" href="/ui/styles.css">
+  <script src="/ui/main.js" defer></script>
+</head>
+<body>
+  <header class="wrap masthead" id="masthead">
+    <div>
+      <h1 class="title">Cluster Job Runner</h1>
+      <p class="label eyebrow">Kubernetes Jobs · Live</p>
+    </div>
+    <div class="conn" id="conn" data-state="connecting">
+      <p class="conn-state"><span class="conn-dot" aria-hidden="true"></span><span id="conn-label">Connecting…</span></p>
+      <p class="conn-updated" id="conn-updated"></p>
+    </div>
+  </header>
+
+  <main class="wrap" id="main">
+    <div class="toolbar">
+      <label class="label toolbar-label" for="ns-input">Namespace</label>
+      <input class="toolbar-input" id="ns-input" type="text" placeholder="All namespaces"
+             autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="ns-error">
+      <p class="field-error toolbar-error" id="ns-error" hidden></p>
+      <div class="toolbar-actions">
+        <button type="button" class="btn-text" id="refresh-btn">Refresh</button>
+        <button type="button" class="toggle" id="auto-btn" aria-pressed="true">
+          <span class="switch" aria-hidden="true"></span>Auto-refresh
+        </button>
+        <button type="button" class="btn-primary" id="new-btn">New Job</button>
+      </div>
+    </div>
+
+    <ul class="legend" id="legend" aria-label="Status legend"></ul>
+
+    <div id="banner" role="status"></div>
+    <p class="summary" id="summary"></p>
+
+    <section class="jobs" id="jobs" tabindex="-1" aria-label="Jobs">
+      <p class="quiet" id="loading">Loading…</p>
+      <div class="empty" id="empty" hidden>
+        <p class="empty-title">No jobs yet</p>
+        <p class="muted">Create one with New Job, or <code>POST /api/jobs</code></p>
+      </div>
+      <table class="job-table" id="job-table" hidden>
+        <thead>
+          <tr>
+            <th scope="col">Status</th>
+            <th scope="col">Name</th>
+            <th scope="col"><abbr title="Pods: active · succeeded · failed">Pods</abbr></th>
+            <th scope="col">Started</th>
+            <th scope="col">Duration</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody id="job-rows"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <div class="backdrop" id="backdrop"></div>
+  <div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="d-name">
+    <div class="drawer-head">
+      <div class="drawer-top">
+        <div>
+          <h2 class="drawer-name" id="d-name"></h2>
+          <p class="muted" id="d-namespace"></p>
+        </div>
+        <button type="button" class="close" id="d-close" aria-label="Close">×</button>
+      </div>
+      <div class="drawer-meta">
+        <span id="d-badge"></span>
+        <code class="uid" id="d-uid"></code>
+      </div>
+      <div class="drawer-actions">
+        <button type="button" class="btn-text" id="d-rerun">Rerun</button>
+        <button type="button" class="btn-text danger" id="d-delete">Delete</button>
+      </div>
+    </div>
+    <p class="notice" id="d-notice" hidden></p>
+    <div class="drawer-body" id="d-body" tabindex="-1"></div>
+  </div>
+
+  <dialog class="modal modal-sm" id="confirm-dialog" aria-labelledby="confirm-title">
+    <form method="dialog" class="modal-body">
+      <h2 class="modal-title" id="confirm-title">Delete Job</h2>
+      <p id="confirm-text"></p>
+      <div class="modal-actions">
+        <button class="btn-text" value="cancel" autofocus>Cancel</button>
+        <button class="btn-danger" value="delete">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal" id="create-dialog" aria-labelledby="create-title">
+    <form class="modal-body" id="create-form">
+      <h2 class="modal-title" id="create-title">New Job</h2>
+
+      <div>
+        <p class="label" id="preset-label">Presets</p>
+        <ul class="presets" aria-labelledby="preset-label">
+          <li><button type="button" class="preset" data-preset="ok">Succeeds</button><span class="hint">SUCCEEDED</span></li>
+          <li><button type="button" class="preset" data-preset="badImage">Bad image</button><span class="hint">STUCK</span></li>
+          <li><button type="button" class="preset" data-preset="exits1">Exits non-zero</button><span class="hint">FAILED</span></li>
+        </ul>
+      </div>
+
+      <div class="spec-field">
+        <label class="label" for="spec-input">Job spec (JSON)</label>
+        <textarea class="spec-input" id="spec-input" rows="18" spellcheck="false"
+                  autocomplete="off" autocapitalize="off" autofocus></textarea>
+      </div>
+
+      <div class="form-error" id="create-error" role="alert" hidden></div>
+
+      <details class="spec-ref">
+        <summary class="label">Spec reference</summary>
+        <div class="table-wrap">
+          <table class="mini">
+            <thead>
+              <tr><th scope="col">Field</th><th scope="col">Required</th><th scope="col">Rule / default</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>name</code></td><td>yes</td><td>DNS label: lowercase letters, digits and <code>-</code>, at most 63 characters</td></tr>
+              <tr><td><code>image</code></td><td>yes</td><td>Image reference, e.g. <code>busybox:1.36</code></td></tr>
+              <tr><td><code>namespace</code></td><td>no</td><td>Default <code>"default"</code>; same rule as <code>name</code></td></tr>
+              <tr><td><code>command</code>, <code>args</code></td><td>no</td><td>Arrays of strings</td></tr>
+              <tr><td><code>env</code></td><td>no</td><td>Object mapping string → string</td></tr>
+              <tr><td><code>completions</code>, <code>parallelism</code></td><td>no</td><td>Integer ≥ 1; default 1</td></tr>
+              <tr><td><code>resources</code></td><td>no</td><td><code>{"requests": {"cpu", "memory"}, "limits": {…}}</code> with quantities like <code>"100m"</code> or <code>"64Mi"</code>; a request must not exceed its limit</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="muted small">Unknown fields are rejected.</p>
+      </details>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-text" id="create-cancel">Cancel</button>
+        <button type="submit" class="btn-primary" id="create-submit">Create</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+</body>
+</html>
