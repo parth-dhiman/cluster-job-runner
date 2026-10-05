@@ -228,3 +228,4 @@ $RECYCLE.BIN/
 
 # Created when files are copied from Windows into WSL
 *:Zone.Identifier
+scratch.py

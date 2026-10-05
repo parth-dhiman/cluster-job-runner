@@ -25,8 +25,18 @@ from app.api.errors import register_error_handlers
 
 # ===== Script-Level initilizations =====
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    static_folder   = "../ui",
+    static_url_path = "/ui",
+)
 register_error_handlers(app)
+
+# ========== UI ==========
+
+@app.get("/")
+def index() -> Response:
+    return app.send_static_file("index.html")
 
 # ========== Endpoints ==========
 
