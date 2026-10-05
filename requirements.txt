@@ -2,3 +2,4 @@ Flask
 kubernetes
 pydantic
 Werkzeug
+pytest
